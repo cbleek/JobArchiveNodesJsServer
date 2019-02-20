@@ -4,11 +4,19 @@ import token from '../services/token';
 export default {
 	signup: (req, res, next) => {
 		const { username, email, password } = req.body;
+
 		if (!username || !email || !password) {
 			return res
 				.status(422)
 				.send({ error: 'User information invalid' });
 		}
+		const user = {
+			username: username,
+			email: email,
+			password: password,
+			verified: 0
+		}
+		console.log(user);
 		const db = firebase.firestore();
 		let flag = 1;
 		return new Promise((resolve, reject) => {
@@ -30,12 +38,13 @@ export default {
 							.send({ error: 'Email is in use' }));
 					}
 
-					db.collection('users').add(req.body)
+					db.collection('users').add(user)
 						.then(docRef => {
 							console.log();
 							console.log(`added id: ${docRef.id}`);
 							let confirmtoken = token.generateToken(docRef.id);
 							console.log(confirmtoken);
+
 							return resolve(res
 								.status(200)
 								.send({ token: confirmtoken }));
