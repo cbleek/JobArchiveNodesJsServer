@@ -5,6 +5,16 @@ export default {
 		console.log('We are going to send confirm email to you...')
 		console.log(token);
 		console.log(email);
+		var transporter = nodemailer.createTransport({
+			host: "posty.cross-solution.de",
+			port: 465,
+			secure: true,
+			auth: {
+				user: "api@yawik.org",
+				pass: "MT8T46WA8AzV"
+			}
+		});
+
 
 		transporter.verify(function (error, success) {
 			if (error) {
