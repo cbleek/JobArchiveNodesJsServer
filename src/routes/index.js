@@ -6,7 +6,8 @@ const router = require('express').Router()
 //Authentication
 router.post('/signup', Authentication.signup)
 router.post('/signin', Authentication.signin)
-router.post('/logout', Authentication.logout)
+router.post('/logout', Middlewares.loginRequired, Authentication.logout)
+router.get('/validateemail', Authentication.validateemail)
 //Confirm Server Status
 router.get('/ping', (req, res) => res.send('pong'))
 router.get('/', (req, res) => res.send({ 'status': 'server is running...' }))
