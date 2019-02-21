@@ -1,12 +1,13 @@
 import firebase from 'firebase';
+var dotenv = require('dotenv').config();
 
 var config = {
-	apiKey: "AIzaSyBl37H1L3b0A6Ngf-fYLNS-cfbC0aYUWJI",
-	authDomain: "newagent-20e1a.firebaseapp.com",
-	databaseURL: "https://newagent-20e1a.firebaseio.com",
-	projectId: "newagent-20e1a",
-	storageBucket: "newagent-20e1a.appspot.com",
-	messagingSenderId: "472476880024"
+	apiKey: process.env.FIREBASE_APIKEY,
+	authDomain: process.env.FIREBASE_AUTHDOMAIN,
+	databaseURL: process.env.FIREBASE_DATABASEURL,
+	projectId: process.env.FIREBASE_PROJECTID,
+	storageBucket: process.env.FIREBASE_STORAGEBUCKET,
+	messagingSenderId: process.envFIREBASE_MESSAGINGSENDERID
 };
 
 firebase.initializeApp(config);

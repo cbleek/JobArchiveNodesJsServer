@@ -1,17 +1,17 @@
 var nodemailer = require('nodemailer');
+var dotenv = require('dotenv').config();
 
 export default {
 	sendemail: function (token, email) {
 		console.log('We are going to send confirm email to you...')
-		console.log(token);
-		console.log(email);
+		console.log(dotenv);
 		var transporter = nodemailer.createTransport({
-			host: "posty.cross-solution.de",
-			port: 465,
+			host: process.env.SMTP_HOST,
+			port: process.env.port,
 			secure: true,
 			auth: {
-				user: "api@yawik.org",
-				pass: "MT8T46WA8AzV"
+				user: process.env.SMTP_USER,
+				pass: process.env.SMTP_PASSWORD
 			}
 		});
 
