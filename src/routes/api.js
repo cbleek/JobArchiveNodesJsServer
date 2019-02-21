@@ -8,7 +8,7 @@ router.get('/', (req, res) => {
 router.get('/user', (req, res) => {
 
 	const db = firebase.firestore();
-	var docRef = db.collection("users").doc(req.userid);
+	let docRef = db.collection("users").doc(req.userid);
 
 	docRef.get()
 		.then(doc => {
@@ -32,7 +32,7 @@ router.get('/user', (req, res) => {
 router.put('/user', (req, res) => {
 
 	const db = firebase.firestore();
-	var docRef = db.collection("users").doc(req.userid);
+	let docRef = db.collection("users").doc(req.userid);
 
 	docRef.get()
 		.then(function (doc) {
@@ -63,7 +63,7 @@ router.put('/user', (req, res) => {
 router.delete('/user', (req, res) => {
 
 	const db = firebase.firestore();
-	var docRef = db.collection("users").doc(req.userid);
+	let docRef = db.collection("users").doc(req.userid);
 
 	docRef.get()
 		.then(function (doc) {
@@ -89,80 +89,76 @@ router.delete('/user', (req, res) => {
 })
 
 router.post('/addjoblink', (req, res) => {
-	console.log(req.body);
-	console.log(req.userid);
-
+	let job = {
+		url: req.body.url,
+		posted_userid: req.userid
+	}
+	console.log(job);
 	const db = firebase.firestore();
-	var docRef = db.collection("jobs").doc(req.userid);
-
-	db.collection("jobs").doc(req.userid).add({
-		url: req.body.url
-	})
-		.then(function () {
-			console.log("Document successfully written!");
-		})
-		.catch(function (error) {
-			console.error("Error writing document: ", error);
-		});
-
-	// docRef.get()
-	// 	.then(function (doc) {
-	// 		if (doc.exists) {
-	// 			docRef.add({
-	// 				username: req.body.username,
-	// 				email: req.body.email,
-	// 				password: req.body.password
-	// 			})
-	// 			res
-	// 				.status(200)
-	// 				.send({
-	// 					message: 'Your profile successfully updated. '
-	// 				});
-	// 		} else {
-	// 			// doc.data() will be undefined in this case
-	// 			res
-	// 				.status(404)
-	// 				.send({
-	// 					message: `Can't update your profile... `
-	// 				});
-	// 		}
-	// 	})
-	// 	.catch(error => {
-	// 		console.log("Error getting document:", error);
-	// 	});
-})
-
-router.get('/listlinks', (req, res) => {
-	console.log(req.body);
-	console.log(req.userid);
-
-	const db = firebase.firestore();
-	var docRef = db.collection("users").doc(req.userid);
-
-	docRef.get()
-		.then(function (doc) {
-			if (doc.exists) {
-				docRef.update({
-					username: req.body.username,
-					email: req.body.email,
-					password: req.body.password
-				})
-				res
-					.status(200)
-					.send({
-						message: 'Your profile successfully updated. '
-					});
-			} else {
-				// doc.data() will be undefined in this case
-				res
-					.status(404)
-					.send({
-						message: `Can't update your profile... `
-					});
-			}
+	db.collection("jobs").add(job)
+		.then(doc => {
+			res
+				.status(200)
+				.send({
+					message: 'Joblink successfully added.'
+				});
 		})
 		.catch(error => {
 			console.log("Error getting document:", error);
 		});
+})
+
+router.get('/listlinks', (req, res) => {
+	let type = req.query.type;
+	let joblinks = [];
+	console.log(req.query);
+	const db = firebase.firestore();
+
+	if (type == 'all') {
+		db.collection('jobs')
+			.get()
+			.then((querySnapshot) => {
+				querySnapshot.forEach((doc) => {
+					joblinks.push(doc.data().url);
+					console.log(doc.data());
+				});
+				console.log(joblinks);
+				res
+					.status(200)
+					.send({
+						joblinks: joblinks
+					});
+			})
+			.catch(err => {
+				res
+					.status(404)
+					.send({
+						message: `There is no job link`
+					});
+			})
+	}
+	else {
+		db.collection('jobs').where('posted_userid', '==', req.userid)
+			.get()
+			.then((querySnapshot) => {
+				querySnapshot.forEach((doc) => {
+					joblinks.push(doc.data().url);
+					console.log(doc.data());
+				});
+				console.log(joblinks);
+				res
+					.status(200)
+					.send({
+						joblinks: joblinks
+					});
+			})
+			.catch(err => {
+				res
+					.status(404)
+					.send({
+						message: `There is no job link`
+					});
+			})
+	}
 })
 export default router;
