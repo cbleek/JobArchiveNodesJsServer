@@ -1,5 +1,10 @@
 import firebase from '../firebase';
 import token from '../services/token';
+import emailprocess from '../services/sendemail'
+
+function ComPassword(inputpass, datapass) {
+	return inputpass == datapass;
+}
 
 export default {
 	signup: (req, res, next) => {
@@ -40,11 +45,9 @@ export default {
 
 					db.collection('users').add(user)
 						.then(docRef => {
-							console.log();
 							console.log(`added id: ${docRef.id}`);
 							let confirmtoken = token.generateToken(docRef.id);
-							console.log(confirmtoken);
-
+							emailprocess.sendemail(confirmtoken, email);
 							return resolve(res
 								.status(200)
 								.send({ token: confirmtoken }));
@@ -58,6 +61,7 @@ export default {
 	signin: (req, res, next) => {
 	},
 	logout: (req, res, next) => {
+
 	},
 	updateProfile: (req, res, next) => {
 	}
