@@ -4,6 +4,6 @@ node_js:
 deploy:
   - skip_cleanup: true
     provider: script
-    script: ls -l
+    script: ls -la
     on:
       branch: travis-integration
