@@ -14,7 +14,6 @@ export default {
 	verifyToken: function (token, cb) {
 
 		const decode = jwt.decode(token, config.jwt_secret)
-		console.log(decode);
 		if (!decode) return cb({ error: 'Token is not verified.' });
 		cb(null, decode);
 	}

@@ -1,28 +1,8 @@
 import firebase from '../firebase';
 import token from '../services/token';
 import emailprocess from '../services/sendemail'
+import utils from '../utils/index'
 
-function ComPassword(inputpass, datapass) {
-	return inputpass == datapass;
-}
-
-function istokeninblacklist(token) {
-	const db = firebase.firestore();
-	return new Promise((resolve, reject) => {
-		db.collection("blacklisttoken").where("blacklisttoken", "==", token)
-			.get()
-			.then((querySnapshot) => {
-				querySnapshot.forEach((doc) => {
-					console.log('Found existing token');
-					return resolve(1);
-				});
-
-				console.log('This token is valid');
-				return resolve(0);
-			})
-			.catch(err => { reject(err); })
-	})
-}
 export default {
 	signup: (req, res, next) => {
 		const { username, email, password } = req.body;
@@ -63,10 +43,10 @@ export default {
 						.then(docRef => {
 							console.log(`added id: ${docRef.id}`);
 							let confirmtoken = token.generateToken(docRef.id);
-							emailprocess.sendemail(confirmtoken, email);
+							//emailprocess.sendemail(confirmtoken, email);
 							return resolve(res
 								.status(200)
-								.send({ token: confirmtoken }));
+								.send(emailprocess.sendemail(confirmtoken, email)));
 						})
 						.catch(err => { reject(err); })
 					// console.log(db.collection('users').add(req.body))
@@ -92,7 +72,7 @@ export default {
 					querySnapshot.forEach((doc) => {
 						console.log('Found existing email');
 						id = doc.id
-						if (!ComPassword(password, doc.data().password)) {
+						if (!utils.ComPassword(password, doc.data().password)) {
 							id = 0;
 							return resolve(res
 								.status(400)
@@ -116,41 +96,39 @@ export default {
 		})
 	},
 	logout: (req, res, next) => {
-		var request_token = req.headers.authorization;
+		var request_token = utils.extracttokenfromheader(req.headers.authorization);
+		console.log(request_token);
 
-		if (req.headers.authorization.startsWith("Bearer ")) {
-			request_token = req.headers.authorization.substring(7, req.headers.authorization.length);
-		} else {
-			//Error
-		}
-
-		istokeninblacklist(request_token)
+		utils.istokeninblacklist(request_token)
 			.then((flag) => {
-				if (flag == 1)
+				if (flag == 1) {
 					return res
 						.status(401)
 						.send({ message: 'This token has been expired already. Log In required and receive new token' })
+				}
+				else {
+					console.log(request_token);
+					token.verifyToken(request_token, (err, decode) => {
+						if (err) {
+							res
+								.status(401)
+								.send({ message: 'Access token is missing or invalid' })
+						}
+						else {
+							const db = firebase.firestore();
+							db.collection('blacklisttoken').add({ blacklisttoken: request_token });
+							res
+								.status(200)
+								.send({ message: 'Successfully log out' })
+						}
+					})
+				}
 			})
-
-		token.verifyToken(request_token, (err, decode) => {
-			console.log(decode);
-			if (err) {
+			.catch((err) => {
 				res
 					.status(401)
 					.send({ message: 'Access token is missing or invalid' })
-			}
-			else {
-				const db = firebase.firestore();
-				db.collection('blacklisttoken').add({ blacklisttoken: request_token });
-				res
-					.status(200)
-					.send({ message: 'Successfully log out' })
-			}
-		})
-
-
-	},
-	updateProfile: (req, res, next) => {
+			})
 	},
 	validateemail: (req, res, next) => {
 		const validatetokken = req.query.token;
