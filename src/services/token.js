@@ -1,7 +1,7 @@
-import jwt from 'jwt-simple';
-import config from '../config';
+const jwt = require('jwt-simple');
+const config = require('../lib/config');
 
-export default {
+const token = {
 	generateToken: function (userid) {
 		console.log('Generating token...');
 		const timeStamp = new Date().getTime();
@@ -11,10 +11,15 @@ export default {
 		}
 		return jwt.encode(payload, config.jwt_secret);
 	},
-	verifyToken: function (token, cb) {
+	verifyToken: async function (token, cb) {
+		try {
+			const decode = await jwt.decode(token, config.jwt_secret)
+			return decode;
+		} catch (err) {
+			return null;
+		}
 
-		const decode = jwt.decode(token, config.jwt_secret)
-		if (!decode) return cb({ error: 'Token is not verified.' });
-		cb(null, decode);
 	}
-}
+};
+
+module.exports = token;

@@ -1,33 +1,32 @@
-import firebase from '../firebase';
-export default {
+const firebase = require('../lib/firebase');
+const lowerCase = require('lower-case');
+
+const utils = {
 	ComPassword: function (inputpass, datapass) {
 		return inputpass == datapass;
 	},
-	istokeninblacklist: function (token) {
+	istokeninblacklist: async function (token) {
 		const db = firebase.firestore();
-		return new Promise((resolve, reject) => {
-			db.collection("blacklisttoken").where("blacklisttoken", "==", token)
-				.get()
-				.then((querySnapshot) => {
-					querySnapshot.forEach((doc) => {
-						console.log('Found existing token');
-						return resolve(1);
-					});
-
-					console.log('This token is valid');
-					return resolve(0);
-				})
-				.catch(err => { reject(err); })
-		})
+		var isexpiredtoken = 0;
+		return db.collection("blacklisttoken").where("blacklisttoken", "==", token).get()
+			.then((querySnapshot) => {
+				querySnapshot.forEach((doc) => {
+					console.log('Found existing token');
+					isexpiredtoken = 1;
+				});
+				return isexpiredtoken;
+			})
+			.catch(err => { reject(err); })
 	},
-	extracttokenfromheader: function (bearertoken) {
-		var request_token;
+	extracttokenfromheader: function (token) {
+		let request_token = token;
 
-		if (bearertoken.startsWith("Bearer ")) {
-			request_token = bearertoken.substring(7, bearertoken.length);
-		} else {
-			//Error
+		if (token.startsWith("Bearer ")) {
+			request_token = token.substring(7, token.length);
 		}
 		return request_token;
-	}
+	},
+	lowerCase
 }
+
+module.exports = utils;

@@ -1,0 +1,263 @@
+openapi: 3.0.0
+info:
+  title: Job Archive
+  description: API for an archive of job postings.
+  version: 1.0.0
+servers:
+- url: https://virtserver.swaggerhub.com/SJhumili/JobArchiveAPI/1.0.0
+  description: SwaggerHub API Auto Mocking
+- url: http://localhost:8000
+  description: Test in localserver
+- url: https://api.yawik.org
+  description: Test in api.yawik.org
+tags:
+- name: auth
+  description: Operations about auth
+- name: user
+  description: Operations about user
+- name: job
+  description: Operations about job
+security:
+  - bearerAuth: [] 
+paths:
+  /signup:
+    post:
+      tags:
+      - auth
+      summary: Create user
+      description: User be able to sign up with username, password, email. After sign up backend will send token to email.
+      operationId: signupuser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: test
+              email: test@test.com
+              password: test
+        required: true
+      responses:
+        200:
+          description: New user successfully created.
+        default:
+          description: The eamil is using by someone else.
+      security: []
+  /signin:
+    post:
+      tags:
+        - auth
+      summary: Sign in with email and password
+      description: User be able to sign into the system and server will respond access-token, and this access-token should be stored in session. This access-token will be used to use other api. Backend will identify user using access-token.
+      operationId: signin
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SigninRequest'
+            example:
+              email: test@test.com
+              password: test
+        required: true
+      responses:
+        200:
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+                example: Bearer 35775k6dehgn678865k87k748o233
+            application/json:
+              schema:
+                type: string
+                example: Bearer 35775k6dehgn678865k87k748o233
+        404:
+          description: User not found
+        400:
+          description: Invalid email/password supplied
+        422:
+          description: email/password not supplied
+      security: []
+  /logout:
+    post:
+      tags:
+        - auth
+      summary: Logs out current logged in user
+      description: ""
+      operationId: logoutUser
+      responses:
+        200:
+          description: User successfully log out.
+        default:
+          $ref: '#/components/responses/UnauthorizedError'
+  /validateemail:
+    get:
+      tags:
+      - auth
+      summary: Confirm user's email address
+      operationId: confirmemail
+      parameters:
+      - in: query
+        name: token
+        description: this token is from backend after sign up
+        required: true
+        schema:
+          type: string
+        example: awevbbrntye2y53n5467xcvbn35u7mu3456
+      responses:
+        200:
+          description: Email address has been confirmed.
+        default:
+          description: Something went wrong
+      security: []
+  /api/user:
+    get:
+      tags:
+      - user
+      summary: Get user information
+      description: An authenticated user be able to retrieve his or her information
+      operationId: getuser
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                username: test
+                email: test@test.com
+                password: test
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                username: test
+                email: test@test.com
+                password: test
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+      - user
+      summary: Update user profile
+      description: An authenticated user be able to update information.
+      operationId: updateuser
+      requestBody:
+        description: Updated user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+            example:
+              username: test
+              email: test@test.com
+              password: test
+        required: true
+      responses:
+        200:
+          description: User data successfully updated.
+        default:
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      tags:
+      - user
+      summary: Delete user
+      description: User be able to delete profile.
+      operationId: deleteUser
+      responses:
+        200:
+          description: Your profile deleted successfully.
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/addjoblink:
+    post:
+      tags:
+      - job
+      summary: Post a link
+      description: An authenticated user be able to post a link
+      operationId: addjoblink
+      requestBody:
+        description: Job url
+        content:
+          application/json:
+            schema:
+              type: string
+            example:
+              url: 'http://example/job1'
+        required: true
+      responses:
+        200:
+          description: Job link added successfully.
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/listlinks:
+    get:
+      tags:
+      - job
+      summary: Get Job lists
+      description: An authenticated user be able to retrieve joblinks
+      operationId: getjoblinks
+      parameters:
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [all, mine]
+            example: all
+          description: if type='all' user be able to retrieve all jobads but not 'all' user will retrieve his own posted jobads
+      responses:
+        200:
+          description: Job links
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: string
+              example:
+                joblinks:
+                  ['http://example/job1','http://example/job2']
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+      xml:
+        name: User
+    SigninRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string  
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

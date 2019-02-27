@@ -1,17 +1,17 @@
-var nodemailer = require('nodemailer');
-var dotenv = require('dotenv').config();
+const nodemailer = require('nodemailer')
+const config = require('../lib/config')
 
-export default {
+const emailprocess = {
 	sendemail: function (token, email) {
 		console.log('We are going to send confirm email to you...')
-		console.log(dotenv);
+
 		var transporter = nodemailer.createTransport({
-			host: process.env.SMTP_HOST,
-			port: process.env.port,
+			host: config.emailserver.SMTP.SMTP_HOST,
+			port: config.emailserver.SMTP.SMTP_PORT,
 			secure: true,
 			auth: {
-				user: process.env.SMTP_USER,
-				pass: process.env.SMTP_PASSWORD
+				user: config.emailserver.SMTP.SMTP_USER,
+				pass: config.emailserver.SMTP.SMTP_PASSWORD
 			}
 		});
 
@@ -23,8 +23,7 @@ export default {
 				console.log("Server is ready to take our messages");
 			}
 		});
-		//var link = `http://localhost:8000/validateemail?token=${token}` // for local test
-		var link = `https://api.yawik.org/validateemail?token=${token}` //for production
+		var link = config.emailserver.confirmemaillink_localtest + 'validateemail?token=' + token // for local test
 		console.log(link);
 		var mailOptions = {
 			from: 'posty.cross-solution.de',
@@ -36,6 +35,7 @@ export default {
 
 		transporter.sendMail(mailOptions, function (error, info) {
 			if (error) {
+				console.log("error?");
 				console.log(error);
 			} else {
 				console.log('Email sent: ' + info.response);
@@ -43,3 +43,4 @@ export default {
 		});
 	}
 }
+module.exports = emailprocess;
