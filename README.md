@@ -1,5 +1,5 @@
 # server-side
-Firebase, Express, Node
+Express, Node, Database:Cloud Firestore
 
 ## Server-side usage(PORT: 8000)
 - $ npm i
