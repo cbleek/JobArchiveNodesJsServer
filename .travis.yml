@@ -1,0 +1,10 @@
+language: node_js
+node_js:
+  - "node"
+deploy:
+  - skip_cleanup: true
+    provider: script
+    script: npm i && npm run build
+    on:
+      branch: travis-integration
+  
